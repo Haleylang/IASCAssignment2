@@ -1,0 +1,7 @@
+body{background-color:#cd0033}
+h1{
+color: white;
+font-family: "arial", arial, sans-serif;
+font-size:18px;
+text-align: center;
+}

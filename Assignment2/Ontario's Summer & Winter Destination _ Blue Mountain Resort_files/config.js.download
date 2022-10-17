@@ -1,0 +1,104 @@
+/*** Inbenta chatbot SDK configuration and build ***/
+var inbApp = {
+  // Inbenta chatbot SDK credentials
+  sdkAuth: {
+    inbentaKey: 'Bd8jCpCyivv4nzfLeQB6jFVy0e8R3VTNmMUFRlzq4eQ=',
+    domainKey:
+      'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJwcm9qZWN0IjoiYmx1ZV9tb3VudGFpbl9iNmQ2X2NoYXRib3RfZW4iLCJkb21haW5fa2V5X2lkIjoiQmVnR1ZwbkJaZjg4ejNFSVAyM3E2UTo6In0.Q63OPnQ1d46sAOBul7-yYckg22L48xcg1FJTUZDCFDhDTDB3fouB_bNYd1xHOyCz_8rz_QRCZWLNnYhgGlE00A',
+  },
+  // Inbenta chatbot SDK configuration
+  sdkConfig: {
+    chatbotId: 'incontact_chatbot',
+    environment: 'production',
+    userType: 0,
+    lang: 'en',
+    labels: {
+      en: { 'interface-title': 'Ask Alto' },
+    },
+    closeButton: { visible: true },
+    html: { 'custom-window-header': '<div></div>' },
+    adapters: [customSystemMessage],
+
+    tracking: {
+      userInfo: {
+        pageTitle: document.title,
+        pagePath: location.pathname,
+      },
+    },
+  },
+  // Incontact Adapter conf
+  incontactConf: {
+    debugMode: true, //enable-disable debugmode for logs
+
+    enabled: true, // Enable inContact escalation
+
+    applicationName: 'BlueMountainChatBot',
+
+    vendorName: 'Alterra',
+
+    profileIdHoursOperation: 2384,
+    teamId: 411781,
+    version: 'v12.0',
+    agentWaitTimeout: 120, // seconds
+
+    getMessageTimeout: 60, // seconds
+
+    incontactSessionLifetime: 3, // minutes
+
+    agent: {
+      name: 'Live Agent', // Agent name
+
+      avatarImage: '', // Agent avatar image soure (file or base64), if empty inContact image will be use
+    },
+
+    defaultUserName: 'User', //name displayed for user in incontact in case there is no form on escalate
+
+    defaultChatbotName: 'Chatbot', //name displayed for chatbot messages in incontact
+
+    defaultSystemName: 'System', //name displayed for chatbot system messages in incontact
+
+    payload: {
+      pointOfContact: '59171c67-36e1-4fd2-8bed-e21d8c4a5619',
+
+      fromAddress: 'bot@bluemountain.ca',
+
+      chatRoomID: '',
+
+      parameters: [],
+    },
+    middlewareUrl: 'https://alterra-incontact-tokens-prod.u01.inbenta.services', // URL of the middleware in charge of creation of 'access_token'
+    middlewareToken: 'S3cur1ty$%Token123', // Same as middleware project
+    oneRequestTranscript: true,
+  },
+};
+
+// Add adapters
+window.inbApp.sdkConfig.adapters.push(
+  /*
+   * InContact adapter must be pushed before escalation adapters
+   * Uncomment below the escalation adatper to use
+   */
+  inbentaIncontactAdapter(inbApp.incontactConf),
+
+  /*
+   * Escalate to InContact with natural language form
+   *  More info: https://developers.inbenta.io/chatbot/javascript-sdk/sdk-adapters/nl-escalation-adapter-2
+   */
+  window.SDKNLEscalation2(inbentaPromiseAgentsAvailableTrue)
+);
+
+window.InbentaChatbotSDK.buildWithDomainCredentials(inbApp.sdkAuth, inbApp.sdkConfig);
+
+function customSystemMessage(chatBot) {
+  chatBot.subscriptions.onDisplayChatbotMessage(function (messageData, next) {
+    if (
+      messageData.flags !== undefined &&
+      messageData.flags[0] !== undefined &&
+      messageData.flags[0] == 'no-subset-match'
+    ) {
+      messageData.message = 'Okay';
+    }
+
+    return next(messageData);
+  });
+}
